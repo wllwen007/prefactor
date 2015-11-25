@@ -1,0 +1,57 @@
+\documentclass[12pt, a4paper, onecolumn]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Copied from the LOFAR Cookbook
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[nofancy]{svninfo}
+\usepackage{listings}
+\lstset{
+basicstyle=\ttfamily\footnotesize,
+frame=lines
+}
+
+\usepackage{graphicx}
+\usepackage{mathptmx}
+\usepackage{subfigure}
+\usepackage[margin=2cm]{geometry}
+\usepackage{natbib}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1ex}
+\usepackage{url}
+%% Define a new 'smalltt' style for the package that will use a smaller font.
+\makeatletter
+\def\url@smallttstyle{%
+  \@ifundefined{selectfont}{\def\UrlFont{\sf}}{\def\UrlFont{\small\ttfamily}}}
+\makeatother
+%% Now actually use the newly defined style.
+\urlstyle{smalltt}
+
+\setcounter{secnumdepth}{5}
+ \usepackage{longtable}
+
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue,breaklinks=false]{hyperref}
+\title{\bf  The Pre-Facet-Calibration Pipeline }
+
+\author{Andreas Horneffer}
+
+\date{\today}
+
+\pagenumbering{arabic}
+\graphicspath{{./figures/}}
+\hbadness=10000
+\vbadness=10000
+
+\begin{document}
+
+\maketitle
+
+\section{Stand-Alone Documentation}
+
+{\it The following part is intended as a sub-section of the Factor chapter in the LOFAR-Cookbook.
+Because of that the formatting ad phrasing is a bit strange in this stand-alone version, but I believe 
+it might sill be helpful.}
+
+\input{pre_facet_cal}
+
+\end{document}

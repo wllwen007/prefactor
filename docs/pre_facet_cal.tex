@@ -1,0 +1,121 @@
+% this is meant to go into the facet-calibration chapter!
+\subsection[Data Preparation: Pre-Facet Calibration Pipeline]{Data Preparation: Pre-Facet Calibration Pipeline\footnote{This 
+subsection was written by Andreas Horneffer ({\tt ahorneffer@mpifr-bonn.mpg.de}) with a lot of help from Tim Shimwell}}
+\label{pre-facet-pipeline}
+
+
+\paragraph*{Factor Requirements:}
+
+The input data to Factor must have the average amplitude scale set and average clock
+offsets removed. Furthermore, the data should be corrected for the LOFAR beam towards the 
+phase center.
+The data should be concatenated in frequency to bands of about 2~MHz bandwidth (so about 
+10--12~subbands). All bands (= input measurement sets) need to have the same number of
+frequency channels\footnote{Factor does lots of averaging by different amounts to keep 
+the data-size and computing time within limits. If the input files have different numbers 
+of channels then finding valid averaging steps for all files gets problematic.}. Also the 
+number of channels should have many divisors to make averaging to different scales easy.
+The data should then undergo direction-independent, phase-only self
+calibration, and the resulting solutions must be provided to Factor. 
+
+
+\paragraph*{The Pipeline:}
+
+The pre-facet calibration pipeline in intended to prepare the observed data so that it can be used 
+in the facet calibration pipeline. It is a parset for the genericpipeline, that first calibrates the 
+calibrator, then transfers the gain amplitudes, 
+clock delays and phase offsets to the target data, and finally does a direction independent phase 
+calibration of the target.
+
+Please have a look at the documentation for the genericpipeline at: 
+\begin{center}
+\url{http://www.astron.nl/citt/genericpipeline/}
+\end{center}
+You should be reasonably familiar with setting up and running a genericpipeline before running this pipeline parset.
+
+\subsubsection{Download and Set-Up}
+
+The pipeline parset and associated scripts can be downloaded from github: 
+\begin{verbatim}
+git clone https://github.com/lofar-astron/prefactor.git
+\end{verbatim}
+It can also be copied from CEP3 from: {\tt /cep3home/horneffer/Pre-Facet-Cal}
+
+It contains the following directories: \\
+\begin{tabular}{rp{.8\textwidth}}
+{\tt bin} & scripts that process date, e.g. do the clock- / TEC- fitting, generate plots etc.\\
+{\tt plugins} & scripts for manipulating mapfiles (They may move to the general LOFAR software at some time.)\\
+{\tt parsets} & parsets (mostly BBS) that are used by the pipeline\\
+{\tt skymodels} & skymodels that are used by the pipeline (e.g. for demixing or calibrating the calibrator)\\
+{\tt docs} & the pre-facet calibration pipeline section of the LOFAR cookbook\\
+\end{tabular}\\
+The main part is the pipeline parset: {\tt Pre-Facet-Cal.parset}. This requires as its input data that has 
+been pre-processed by the ASTRON averaging pipeline.
+It can work both with observations that had a second beam on a calibrator and with interleaved observations in 
+which the calibrator was observed just before and after the target. It doesn't do any demixing, but does
+A-Team clipping for the target data.\footnote{More versions of the pipeline which also do demixing and / or work 
+with raw (non averaged) data are planned and will be added when they are done. They will probably not explained in 
+detail but work in an analog fashion to the basic version.}
+It averages over all the calibrator solutions that it gets, so observations taken at different nights should
+be processed in different runs of the pre-facet calibration pipeline. 
+
+To run the genericpipeline you need a correctly set up configuration file for the genericpipeline,
+see \url{http://www.astron.nl/citt/genericpipeline/#quick-start}.
+In addition to the settings mentioned there in the Quick Start section, you need to ensure that the 
+plugin scripts of the pre-facet calibration pipeline are found. For that you need to add the pre-facet 
+calibration directory to the {\tt recipe\_directories} entry in the pipeline configuration file 
+(so that the {\tt plugins} directory is a subdirectory of one of the {\tt recipe\_directories}).
+The pre-facet calibration pipeline uses only standard genericpipeline tasks, all of which are already defined 
+in the task.cfg file that is part of the LOFAR software release since version 2.12.
+
+%%%%%%%%%%%%%%%%
+% section about running on CEP-3
+%%%%%%%%%%%%%%%%
+
+At the beginning of {\tt Pre-Facet-Cal.parset} there is a section with the following parameters that you need 
+to set:\\
+\begin{tabular}{rp{.7\textwidth}}
+{\tt avg\_timestep} & averaging step needed in NDPPP to average the data to 4 seconds time resolution \\
+{\tt avg\_freqstep} & averaging step needed to average the data to 4 ch/SB frequency resolution \\
+{\tt cal\_input\_path} & path to the directory in which the calibrator data can be found \\
+{\tt cal\_input\_pattern} & pattern that matches the calibrator data files in {\tt cal\_input\_path} (Can e.g. 
+  be used to restrict the amount of data for test runs.)xs \\
+{\tt calibrator\_skymodel} & path to the skymodel for the calibrator \\
+{\tt target\_input\_path} &  same as {\tt cal\_input\_path} but for the target data \\
+{\tt target\_input\_pattern} & same as {\tt cal\_input\_pattern} but for the target data \\
+{\tt target\_skymodel} & path to the skymodel for the phase-only calibration of the target \\
+{\tt num\_SBs\_per\_group} & how many subbands should be concatenated into one measurement set \\
+{\tt results\_directory} & path to the directory into which the processed target data will be moved \\
+\end{tabular}
+
+Below that is a section with the paths to the parsets and scripts that the pipeline uses. You need to 
+adjust the paths to your setup.
+
+\subsubsection{Running the Pipeline}
+
+The steps of the pipeline are described in at bit more detail at: 
+\url{http://www.astron.nl/citt/facet-doc/prefacet.html}. 
+{\bf (ToDo: Update the prefacet webpage!)}
+Before running the pipeline we strongly suggest to go through the pipeline parset and familiarize yourself
+at least roughly with how the pipeline is supposed to work. 
+In particular the flagging parameters for {\tt NDPPP} in the {\tt ndppp\_prep\_cal} and {\tt ndppp\_prep\_target}
+steps probably need to be adjusted to each observation.
+
+Running the pipeline is done in two steps: first only the calibrator part of the pipeline is run. After that the
+inspection plots of the fitting routines should be inspected. 
+The page at \url{http://www.astron.nl/citt/facet-doc/prefacet.html#plots} contains explanations of the plots in 
+the description of the steps. It is rather likely that some additional flagging or so is needed after the first 
+run, this can be included by modifying the pipeline parset. After that the calibration part needs to be re-run. 
+This may need to be repeated a number of times. A full re-run of the pipeline can be done by removing the runtime 
+and work directories of the previous pipeline run.\footnote{Experts of the genericpipeline can re-run only part 
+of a pipeline run by either modifying the statefile or making a new pipeline parset that pick up the data at an 
+intermediate step and continues from there. But there is no easy way to do that yet.}
+
+Only after the calibrator processing was successful and the fits to the calibration values are satisfactory, 
+should the target part of the pipeline be run. This can be done by either adding the steps for the target 
+processing to the existing pipeline, or by copying the numpy ({\tt *.npy}) files from the work directory of the 
+calibrator part to the new work directory and running only the steps for the target processing.
+
+After the pipeline was run successfully, the resulting measurement sets are moved to the specified directory. The
+instrument table of the direction-independent, phase-only calibration are inside the measurement sets with the 
+names {\tt instrument\_directioninpendent}.
