@@ -11,6 +11,14 @@ It includes:
 * diagnostic plots
 * at least some documentation
 
+Version 1.0 does not include:
+* grouping of subbands by actual frequency instead of file number (see branch sort-by-freq for this feature)
+* speed and disk usage improvements by optimized usage of NDPPP (see branch dppp-gaincal for this feature)
+* applying Ionospheric RM corrections
+(Stay tuned for version 2.)
+
+There is a wiki page with more or less useful hints: http://www.lofar.org/wiki/doku.php?id=public:user_software:prefactor
+
 There are several pipeline parsets in this repository:
 * Pre-Facet-Cal.parset : The "standard" pre-facet calibration pipeline, works on pre-NDPPP'ed data
 * Pre-Facet-Cal-RawData-Single.parset : A pre-facet pipeline to work on raw (non NDPPP'ed) data
@@ -18,8 +26,9 @@ There are several pipeline parsets in this repository:
 * Initial-Subtract.parset : A pipeline that generates full FoV images and subtracts the sky-models from the visibilities. (Needed for facet-calibration, this could also be done as the first step of Factor.)
 
 Software requirements:
-* the full "offline" LOFAR software installation version >= 2.15 (With small modifications the Pre-Facet-Cal pipelines can be run with older versions, but that is not supported anymore.)
+* the full "offline" LOFAR software installation version >= 2.15 (With small modifications the Pre-Facet-Cal pipelines can be run with older versions, but that is not supported by the authors anymore.)
 * LoSoTo 
+* LSMTool (see https://github.com/darafferty/LSMTool)
 * Python-PP (see http://www.parallelpython.com/ or https://pypi.python.org/pypi/pp )
 * Python matplotlib
 * WSClean (for Initial-Subtract, version >=1.9)
