@@ -77,12 +77,13 @@ class Band(object):
 
         # Calculate mean FOV
         sec_el = 1.0 / np.sin(self.mean_el_rad)
-        self.fwhm_deg = 1.1 * ((3.0e8 / self.freq) / self.diam) * 180. / np.pi * sec_el
+        self.sec_el = sec_el
+        self.fwhm_deg = 1.1 * ((3.0e8 / self.freq) / self.diam) * 180. / np.pi #* sec_el
         self.imsize_high_res = self.get_optimum_size(self.fwhm_deg
                                                      /self.cellsize_highres_deg * fieldsize_highres)
         self.imsize_low_res = self.get_optimum_size(self.fwhm_deg
                                                     /self.cellsize_lowres_deg * fieldsize_lowres)
-        return (self.imsize_high_res, self.imsize_low_res)
+        return (self.imsize_high_res, self.imsize_low_res, self.sec_el)
 
     def get_optimum_size(self, size):
         """
@@ -263,17 +264,18 @@ def main(ms_input, outmapname=None, mapfile_dir=None, cellsize_highres_deg=0.002
         numfiles += len(band.files)
         for filename in band.files:
             file_single_map.append(DataProduct('localhost', filename, False))
-        (imsize_high_res, imsize_low_res) = band.get_image_sizes(cellsize_highres_deg, cellsize_lowres_deg,
+        (imsize_high_res, imsize_low_res, beam_stretch) = band.get_image_sizes(cellsize_highres_deg, cellsize_lowres_deg,
                                                                  fieldsize_highres, fieldsize_lowres)
-        imsize_high_res_stretch = band.get_optimum_size(int(imsize_high_res*y_axis_stretch))
+        print 'stretch y by ', beam_stretch
+        imsize_high_res_stretch = band.get_optimum_size(int(imsize_high_res*beam_stretch*y_axis_stretch))
         high_size_map.append(DataProduct('localhost', str(imsize_high_res)+" "+str(imsize_high_res_stretch), False))
-        imsize_low_res_stretch = band.get_optimum_size(int(imsize_low_res*y_axis_stretch))
+        imsize_low_res_stretch = band.get_optimum_size(int(imsize_low_res*beam_stretch*y_axis_stretch))
         low_size_map.append(DataProduct('localhost', str(imsize_low_res)+" "+str(imsize_low_res_stretch), False))
         imsize_high_pad = band.get_optimum_size(int(imsize_high_res*image_padding))
-        imsize_high_pad_stretch = band.get_optimum_size(int(imsize_high_res*image_padding*y_axis_stretch))
+        imsize_high_pad_stretch = band.get_optimum_size(int(imsize_high_res*image_padding*beam_stretch*y_axis_stretch))
         high_paddedsize_map.append(DataProduct('localhost', str(imsize_high_pad)+" "+str(imsize_high_pad_stretch), False))
         imsize_low_pad = band.get_optimum_size(int(imsize_low_res*image_padding))
-        imsize_low_pad_stretch = band.get_optimum_size(int(imsize_low_res*image_padding*y_axis_stretch))
+        imsize_low_pad_stretch = band.get_optimum_size(int(imsize_low_res*image_padding*beam_stretch*y_axis_stretch))
         low_paddedsize_map.append(DataProduct('localhost', str(imsize_low_pad)+" "+str(imsize_low_pad_stretch), False))
 
     print "InitSubtract_sort_and_compute.py: Computing averaging steps."
